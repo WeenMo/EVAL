@@ -1,11 +1,184 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <title>EVAL Dashboard Prototype</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide-react/dist/lucide-react.min.js"></script>
+  <!-- React + ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-    Hola mundo
+<body class="bg-slate-100">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+    const { AlertTriangle } = lucideReact;
+
+    function EvalDashboard() {
+      const [activeTab, setActiveTab] = useState("beneficiarios");
+      const [subTab, setSubTab] = useState("personas");
+      const [showDialog, setShowDialog] = useState(false);
+      const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
+
+      const personasFisicas = [
+        { folio: "PF001", curp: "CURP123", nombre: "María López", municipio: "Cuernavaca", alerta: true },
+        { folio: "PF002", curp: "CURP456", nombre: "Juan Pérez", municipio: "Jiutepec", alerta: false },
+      ];
+
+      const actoresSociales = [
+        { folio: "AS001", idOrg: "ORG123", razon: "Asociación Mujeres Unidas", representante: "Ana Torres", alerta: true },
+        { folio: "AS002", idOrg: "ORG456", razon: "Colectivo Juvenil", representante: "Luis Gómez", alerta: false },
+      ];
+
+      const handleRowClick = (beneficiary) => {
+        if (beneficiary.alerta) {
+          setSelectedBeneficiary(beneficiary);
+          setShowDialog(true);
+        }
+      };
+
+      return (
+        <div className="p-6 min-h-screen">
+          {/* Top Summary Bar */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-xl font-bold text-indigo-700">Programa Corazón de Mujer</h1>
+              <p className="text-sm text-slate-600">Usuario: Pedro — Dirección General de Apoyos</p>
+            </div>
+            <div className="w-1/3">
+              <div className="bg-slate-300 h-4 rounded">
+                <div className="bg-red-600 h-4 rounded" style={{ width: "95%" }}></div>
+              </div>
+              <span className="text-red-600 font-semibold text-sm">Umbral de Alerta (95%)</span>
+            </div>
+          </div>
+
+          {/* Main Tabs */}
+          <div className="flex space-x-4 mb-4">
+            {["beneficiarios", "asignacion", "historial", "bajas"].map((tab) => (
+              <button
+                key={tab}
+                className={`px-4 py-2 rounded ${activeTab === tab ? "bg-indigo-600 text-white" : "bg-slate-200"}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {/* Bandeja de Beneficiarios */}
+          {activeTab === "beneficiarios" && (
+            <div>
+              <div className="flex space-x-2 mb-4">
+                <button
+                  className={`px-3 py-1 rounded ${subTab === "personas" ? "bg-indigo-500 text-white" : "bg-slate-200"}`}
+                  onClick={() => setSubTab("personas")}
+                >
+                  Personas Físicas
+                </button>
+                <button
+                  className={`px-3 py-1 rounded ${subTab === "actores" ? "bg-indigo-500 text-white" : "bg-slate-200"}`}
+                  onClick={() => setSubTab("actores")}
+                >
+                  Actores Sociales
+                </button>
+              </div>
+
+              {/* Table */}
+              <table className="w-full border-collapse bg-white shadow rounded">
+                <thead>
+                  <tr className="bg-slate-200 text-left">
+                    {subTab === "personas" ? (
+                      <>
+                        <th className="p-2">Folio</th>
+                        <th className="p-2">CURP</th>
+                        <th className="p-2">Nombre</th>
+                        <th className="p-2">Municipio</th>
+                        <th className="p-2">Alerta</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="p-2">Folio</th>
+                        <th className="p-2">ID Organización</th>
+                        <th className="p-2">Razón Social</th>
+                        <th className="p-2">Representante</th>
+                        <th className="p-2">Alerta</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(subTab === "personas" ? personasFisicas : actoresSociales).map((b) => (
+                    <tr
+                      key={b.folio}
+                      className="hover:bg-slate-100 cursor-pointer"
+                      onClick={() => handleRowClick(b)}
+                    >
+                      {subTab === "personas" ? (
+                        <>
+                          <td className="p-2">{b.folio}</td>
+                          <td className="p-2">{b.curp}</td>
+                          <td className="p-2">{b.nombre}</td>
+                          <td className="p-2">{b.municipio}</td>
+                          <td className="p-2">
+                            {b.alerta && <AlertTriangle className="text-red-600 inline" />}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-2">{b.folio}</td>
+                          <td className="p-2">{b.idOrg}</td>
+                          <td className="p-2">{b.razon}</td>
+                          <td className="p-2">{b.representante}</td>
+                          <td className="p-2">
+                            {b.alerta && <AlertTriangle className="text-red-600 inline" />}
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Informational Dialog */}
+          {showDialog && selectedBeneficiary && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <div className="bg-white p-6 rounded shadow-lg w-1/2">
+                <h2 className="text-lg font-bold text-red-600 mb-4">⚠️ Coincidencia Detectada</h2>
+                <p className="mb-4">
+                  El beneficiario <strong>{selectedBeneficiary.nombre || selectedBeneficiary.razon}</strong> ya cuenta con asignaciones en otros programas sociales.
+                  Esta información es únicamente de carácter informativo para apoyar la decisión de la URP.
+                </p>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    className="px-4 py-2 bg-indigo-600 text-white rounded"
+                    onClick={() => setShowDialog(false)}
+                  >
+                    Continuar con la Asignación
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-slate-300 rounded"
+                    onClick={() => setShowDialog(false)}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<EvalDashboard />);
+  </script>
 </body>
 </html>
